@@ -1,0 +1,14 @@
+openai
+replicate
+pandas
+playwright
+requests
+aiohttp
+rich
+chardet
+python-dotenv
+streamlit
+pandas
+playwright
+rich
+aiohttp
