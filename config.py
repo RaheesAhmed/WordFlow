@@ -1,3 +1,4 @@
+import json
 import os
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
@@ -28,7 +29,9 @@ DEFAULT_POST_DATE_ADJUSTMENT = -5
 MAX_CONCURRENT_TASKS = 20
 
 # Website Credentials
-WEBSITE_CREDENTIALS_FILE = os.getenv("WEBSITE_CREDENTIALS_FILE", "websites.json")
+WEBSITE_CREDENTIALS_FILE = os.getenv(
+    "WEBSITE_CREDENTIALS_FILE", "website_credentials.json"
+)
 
 
 # Function to adjust the post date based on the number of days
@@ -66,3 +69,8 @@ async def get_default_settings():
         "image_ai_model": DEFAULT_IMAGE_AI_MODEL,
         "post_date_adjustment": DEFAULT_POST_DATE_ADJUSTMENT,
     }
+
+
+def load_website_credentials():
+    with open(WEBSITE_CREDENTIALS_FILE, "r") as file:
+        return json.load(file)
