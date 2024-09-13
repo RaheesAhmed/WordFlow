@@ -1,12 +1,13 @@
-# WordFlow: Advanced WordPress Content Monster
+# WordFlow: Advanced WordPress Content Orchestrator
 
 ![WordFlow Logo](https://placekitten.com/1200/400)
 
-[![GitHub license](https://img.shields.io/github/license/raheesahmed/wordflow.svg)](https://github.com/yourusername/wordflow/blob/master/LICENSE)
-[![GitHub release](https://img.shields.io/github/release/yourusername/wordflow.svg)](https://GitHub.com/yourusername/wordflow/releases/)
-[![GitHub stars](https://img.shields.io/github/stars/yourusername/wordflow.svg)](https://GitHub.com/yourusername/wordflow/stargazers/)
-[![GitHub issues](https://img.shields.io/github/issues/yourusername/wordflow.svg)](https://GitHub.com/yourusername/wordflow/issues/)
+[![GitHub license](https://img.shields.io/github/license/RaheesAhmed/WordFlow.svg)](https://github.com/RaheesAhmed/WordFlow/blob/master/LICENSE)
+[![GitHub release](https://img.shields.io/github/release/RaheesAhmed/WordFlow.svg)](https://GitHub.com/RaheesAhmed/WordFlow/releases/)
+[![GitHub stars](https://img.shields.io/github/stars/RaheesAhmed/WordFlow.svg)](https://GitHub.com/RaheesAhmed/WordFlow/stargazers/)
+[![GitHub issues](https://img.shields.io/github/issues/RaheesAhmed/WordFlow.svg)](https://GitHub.com/RaheesAhmed/WordFlow/issues/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/wordflow.svg)](https://pypi.org/project/wordflow/)
+
 
 WordFlow is an advanced, open-source WordPress content management tool designed to streamline and automate the process of content creation, optimization, and publishing. Built with Python and leveraging the power of AI, WordFlow empowers content creators, marketers, and website administrators to efficiently manage multiple WordPress sites with ease.
 
@@ -23,7 +24,7 @@ WordFlow is an advanced, open-source WordPress content management tool designed 
 
 ## 📋 Table of Contents
 
-- [WordFlow: Advanced WordPress Content Monster](#wordflow-advanced-wordpress-content-monster)
+- [WordFlow: Advanced WordPress Content Orchestrator](#wordflow-advanced-wordpress-content-orchestrator)
   - [🚀 Features](#-features)
   - [📋 Table of Contents](#-table-of-contents)
   - [🛠 Installation](#-installation)
