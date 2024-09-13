@@ -2,13 +2,6 @@
 
 ![WordFlow Logo](wordflow-logo.PNG)
 
-[![GitHub license](https://img.shields.io/github/license/RaheesAhmed/WordFlow.svg)](https://github.com/RaheesAhmed/WordFlow/blob/master/LICENSE)
-[![GitHub release](https://img.shields.io/github/release/RaheesAhmed/WordFlow.svg)](https://GitHub.com/RaheesAhmed/WordFlow/releases/)
-[![GitHub stars](https://img.shields.io/github/stars/RaheesAhmed/WordFlow.svg)](https://GitHub.com/RaheesAhmed/WordFlow/stargazers/)
-[![GitHub issues](https://img.shields.io/github/issues/RaheesAhmed/WordFlow.svg)](https://GitHub.com/RaheesAhmed/WordFlow/issues/)
-[![Python Versions](https://img.shields.io/pypi/pyversions/wordflow.svg)](https://pypi.org/project/wordflow/)
-
-
 WordFlow is an advanced, open-source WordPress content management tool designed to streamline and automate the process of content creation, optimization, and publishing. Built with Python and leveraging the power of AI, WordFlow empowers content creators, marketers, and website administrators to efficiently manage multiple WordPress sites with ease.
 
 ## 🚀 Features
