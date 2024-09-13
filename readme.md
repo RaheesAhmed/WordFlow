@@ -39,13 +39,22 @@ WordFlow is an advanced, open-source WordPress content management tool designed 
    ```
    cd WordFlow
    ```
+3. Create Virtual Envirnoment:
+   ```
+   python -m venv venv
+   ```
 
-3. Install the required dependencies:
+   Activate venv:
+   ```
+   venv/Scripts/Activate
+   ```
+
+4. Install the required dependencies:
    ```
    pip install -r requirements.txt
    ```
 
-4. Set up your environment variables:
+5. Set up your environment variables:
    ```
    cp .env.example .env
    ```
@@ -127,7 +136,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Contact
 
-Your Name - [@rahees_ahmed_witter](https://x.com/rahees_ahmed_) - raheesahmed256@gmail.com
+Rahees Ahmed - [@rahees_ahmed_](https://x.com/rahees_ahmed_) - raheesahmed256@gmail.com
 
 Project Link: [https://github.com/RaheesAhmed/WordFlow.git](https://github.com/RaheesAhmed/WordFlow.git)
 

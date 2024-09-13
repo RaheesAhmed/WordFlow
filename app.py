@@ -1,194 +1,26 @@
 import streamlit as st
 import pandas as pd
-import asyncio
-import aiohttp
-import base64
-import logging
-import os
-import re
-import random
-import string
-from datetime import datetime, timedelta
+from openai_api import generate_content
+from image_generator import generate_image
+from seo_generator import generate_seo
+from wordpress_api import publish_post, edit_post, delete_post
+from process_websites import process_websites
+from utils import load_website_credentials
+from config import *
 
-# Placeholder for OpenAI and Replicate API keys
-openai_api_key = "your_openai_api_key_here"
-replicate_api_token = "your_replicate_api_token_here"
-
-# Placeholder for websites dictionary
-websites = {
-    1: {
-        "url": "https://example.com/wp-json/wp/v2/",
-        "user": "username",
-        "password": "password",
-    },
-    # Add more websites as needed
-}
-
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+st.set_page_config(
+    page_title="WordFlow: Advanced WordPress Content Orchestrator", layout="wide"
 )
 
-
-# Utility functions
-def format_url(url):
-    if not url.startswith(("http://", "https://")):
-        return "https://" + url
-    return url
-
-
-def clean_text(text):
-    return (
-        text.replace("##", "")
-        .replace("**", "")
-        .replace("###", "")
-        .replace("####", "")
-        .strip()
-    )
-
-
-def get_auth_header(user, password):
-    auth_string = f"{user}:{password}"
-    base64_auth = base64.b64encode(auth_string.encode("utf-8")).decode("utf-8")
-    return {"Authorization": f"Basic {base64_auth}", "User-Agent": "Mozilla/5.0"}
-
-
-def format_permalink(title):
-    permalink = re.sub(r"[^a-zA-Z0-9\s]", "", title)
-    words = permalink.lower().split()[:6]
-    formatted_permalink = "-".join(words)
-    return formatted_permalink
-
-
-def generate_random_string(length=4):
-    return "".join(random.choices(string.ascii_lowercase + string.digits, k=length))
-
-
-def get_custom_filename(keyword=None):
-    random_suffix = generate_random_string()
-    if keyword:
-        return f"{keyword}-{random_suffix}.webp"
-    else:
-        return f"{random_suffix}.webp"
-
-
-# Async functions
-async def fetch_serper_results_async(keyword, input_country):
-    url = "https://google.serper.dev/search"
-    headers = {
-        "X-API-KEY": "your_serper_api_key_here",
-        "Content-Type": "application/json",
-    }
-    payload = {"q": keyword, "gl": input_country}
-
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.post(url, headers=headers, json=payload) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    return data
-                else:
-                    st.error(f"Failed to fetch Serper results: {response.status}")
-        except Exception as e:
-            st.error(f"Error fetching Serper results: {e}")
-    return None
-
-
-async def generate_image_async(image_prompt, image_output_count, image_ai_model):
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.post(
-                "https://api.replicate.com/v1/predictions",
-                json={"prompt": image_prompt, "num_outputs": image_output_count},
-                headers={"Authorization": f"Token {replicate_api_token}"},
-            ) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    return data["outputs"][0]["url"]
-                else:
-                    st.error(f"Failed to generate image: {response.status}")
-        except Exception as e:
-            st.error(f"Error generating image: {e}")
-    return None
-
-
-async def create_post_async(
-    content,
-    website,
-    keyword,
-    description,
-    media_id,
-    category,
-    meta_keywords,
-    meta_description,
-    cached_title,
-    tag_names,
-    slug_function,
-    publish_status,
-    post_date_adjustment,
-):
-    headers = get_auth_header(website["user"], website["password"])
-    slug = slug_function(cached_title)
-    category_id = 1  # Placeholder, implement get_category_id function if needed
-    tag_ids = []  # Placeholder, implement get_tag_id function if needed
-    post_date = (datetime.now() + timedelta(days=post_date_adjustment)).strftime(
-        "%Y-%m-%dT%H:%M:%S"
-    )
-
-    data = {
-        "title": cached_title,
-        "slug": slug,
-        "content": content,
-        "status": publish_status,
-        "categories": [category_id],
-        "tags": tag_ids,
-        "featured_media": media_id,
-        "date": post_date,
-        "meta": {
-            "rank_math_focus_keyword": keyword,
-            "rank_math_description": meta_description,
-            "rank_math_keywords": meta_keywords,
-        },
-    }
-
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.post(
-                f"{website['url']}posts", headers=headers, json=data
-            ) as response:
-                response.raise_for_status()
-                post_data = await response.json()
-                permalink = post_data.get("link", "")
-                post_id = post_data["id"]
-                st.success(f"Post published successfully. Permalink: {permalink}")
-                return permalink, post_id, cached_title
-        except Exception as e:
-            st.error(f"Failed to publish post: {e}")
-            return None, None, None
-
-
-# Streamlit UI
-st.title("WordPress Content Manager")
+st.title("WordFlow: Advanced WordPress Content Orchestrator")
 
 # Sidebar for global settings
 st.sidebar.header("Global Settings")
-input_language = st.sidebar.selectbox(
-    "Input Language", ["English", "Spanish", "French", "German"]
-)
-input_openai_model = st.sidebar.selectbox("OpenAI Model", ["gpt-3.5-turbo", "gpt-4"])
-input_country = st.sidebar.selectbox("Search Country", ["us", "uk", "ca", "au"])
-image_output_count = st.sidebar.number_input(
-    "Number of Images to Generate", min_value=1, max_value=5, value=1
-)
-image_ai_model = st.sidebar.selectbox(
-    "Image AI Model", ["stability-ai/stable-diffusion", "midjourney/v4"]
-)
-post_date_adjustment = st.sidebar.number_input("Post Date Adjustment (days)", value=-5)
-publish_status = st.sidebar.selectbox(
-    "Publish Status", ["publish", "draft", "pending", "private"]
-)
+language = st.sidebar.selectbox("Language", ["English", "Spanish", "French", "German"])
+ai_model = st.sidebar.selectbox("AI Model", ["GPT-3.5", "GPT-4"])
+scheduling_option = st.sidebar.selectbox("Scheduling", ["Publish Now", "Schedule"])
 
-# Main content area
+# Main content area with tabs
 tab1, tab2, tab3, tab4 = st.tabs(
     ["Content Generation", "Post Editing", "Post Deletion", "Bulk Operations"]
 )
@@ -196,114 +28,87 @@ tab1, tab2, tab3, tab4 = st.tabs(
 with tab1:
     st.header("Content Generation")
 
-    # Input for website URL and keywords
-    website_url = st.text_input("Website URL")
-    keywords = st.text_area("Keywords (one per line)")
+    keyword = st.text_input("Enter keyword for content generation")
 
     if st.button("Generate Content"):
-        if website_url and keywords:
-            keywords_list = [k.strip() for k in keywords.split("\n") if k.strip()]
+        with st.spinner("Generating content..."):
+            content = generate_content(keyword, ai_model, language)
+            st.write(content)
 
-            for keyword in keywords_list:
-                st.write(f"Processing keyword: {keyword}")
+        with st.spinner("Generating image..."):
+            image_url = generate_image(keyword)
+            st.image(image_url)
 
-                # Fetch SERP data
-                serper_data = asyncio.run(
-                    fetch_serper_results_async(keyword, input_country)
+        with st.spinner("Generating SEO metadata..."):
+            seo_data = generate_seo(content)
+            st.write(seo_data)
+
+        if st.button("Publish to WordPress"):
+            website_credentials = load_website_credentials()
+            selected_site = st.selectbox(
+                "Select WordPress site", list(website_credentials.keys())
+            )
+
+            if scheduling_option == "Schedule":
+                scheduled_date = st.date_input("Select publication date")
+                scheduled_time = st.time_input("Select publication time")
+            else:
+                scheduled_date = None
+                scheduled_time = None
+
+            with st.spinner("Publishing to WordPress..."):
+                publish_result = publish_post(
+                    website_credentials[selected_site],
+                    content,
+                    seo_data,
+                    image_url,
+                    scheduled_date,
+                    scheduled_time,
                 )
-
-                if serper_data:
-                    st.write("SERP data fetched successfully")
-
-                    # Generate SEO elements (placeholder function)
-                    seo_elements = {
-                        "meta_keywords": f"{keyword}, related, terms",
-                        "meta_description": f"Description for {keyword}",
-                        "img_alt": f"Image related to {keyword}",
-                        "website_title": f"Title for {keyword}",
-                        "ai_img_prompt": f"Generate an image for {keyword}",
-                        "website_category": "General",
-                    }
-
-                    # Generate content (placeholder function)
-                    content = f"<h1>Article about {keyword}</h1><p>This is a placeholder for the generated content.</p>"
-
-                    # Generate image
-                    image_url = asyncio.run(
-                        generate_image_async(
-                            seo_elements["ai_img_prompt"],
-                            image_output_count,
-                            image_ai_model,
-                        )
-                    )
-
-                    if image_url:
-                        st.image(image_url, caption=f"Generated image for {keyword}")
-
-                    # Publish post
-                    website = websites[1]  # Using the first website as an example
-                    media_id = 1  # Placeholder, implement upload_image_to_wp function if needed
-
-                    result = asyncio.run(
-                        create_post_async(
-                            content,
-                            website,
-                            keyword,
-                            seo_elements["meta_description"],
-                            media_id,
-                            seo_elements["website_category"],
-                            seo_elements["meta_keywords"],
-                            seo_elements["meta_description"],
-                            seo_elements["website_title"],
-                            [keyword],
-                            format_permalink,
-                            publish_status,
-                            post_date_adjustment,
-                        )
-                    )
-
-                    if result:
-                        permalink, post_id, article_title = result
-                        st.success(f"Post published: {article_title}")
-                        st.write(f"Permalink: {permalink}")
-                        st.write(f"Post ID: {post_id}")
-                else:
-                    st.error(f"Failed to fetch SERP data for {keyword}")
-        else:
-            st.warning("Please enter a website URL and at least one keyword.")
+                st.success(f"Published to {selected_site}: {publish_result}")
 
 with tab2:
     st.header("Post Editing")
 
-    edit_post_id = st.number_input("Post ID to Edit", min_value=1)
-    edit_website = st.selectbox("Select Website", list(websites.keys()))
+    website_credentials = load_website_credentials()
+    selected_site = st.selectbox(
+        "Select WordPress site", list(website_credentials.keys())
+    )
 
-    edit_title = st.text_input("New Title (optional)")
-    edit_content = st.text_area("New Content (optional)")
+    post_id = st.number_input("Enter post ID to edit", min_value=1)
+
+    if st.button("Fetch Post"):
+        # Implement logic to fetch post content
+        st.info("Fetching post...")
+        # Display fetched post content for editing
+
+    edited_content = st.text_area("Edit post content", height=300)
 
     if st.button("Update Post"):
-        if edit_post_id and edit_website:
-            # Placeholder for post editing logic
-            st.success(
-                f"Post {edit_post_id} updated successfully on {websites[edit_website]['url']}"
+        with st.spinner("Updating post..."):
+            update_result = edit_post(
+                website_credentials[selected_site], post_id, edited_content
             )
-        else:
-            st.warning("Please enter a Post ID and select a website.")
+            st.success(f"Post updated: {update_result}")
 
 with tab3:
     st.header("Post Deletion")
 
-    delete_post_id = st.number_input("Post ID to Delete", min_value=1)
-    delete_website = st.selectbox("Select Website for Deletion", list(websites.keys()))
+    website_credentials = load_website_credentials()
+    selected_site = st.selectbox(
+        "Select WordPress site", list(website_credentials.keys())
+    )
+
+    post_id = st.number_input("Enter post ID to delete", min_value=1)
 
     if st.button("Delete Post"):
-        if delete_post_id and delete_website:
-            # Placeholder for post deletion logic
-            st.success(
-                f"Post {delete_post_id} deleted successfully from {websites[delete_website]['url']}"
-            )
+        confirm = st.checkbox("I confirm that I want to delete this post")
+        if confirm:
+            with st.spinner("Deleting post..."):
+                delete_result = delete_post(website_credentials[selected_site], post_id)
+                st.success(f"Post deleted: {delete_result}")
         else:
-            st.warning("Please enter a Post ID and select a website.")
+            st.warning("Please confirm deletion")
 
 with tab4:
     st.header("Bulk Operations")
@@ -315,11 +120,11 @@ with tab4:
         st.write(df)
 
         if st.button("Process Bulk Operations"):
-            # Placeholder for bulk operations logic
-            st.info("Processing bulk operations...")
-            # Implement the logic to process the CSV file and perform bulk operations
-            st.success("Bulk operations completed successfully")
+            with st.spinner("Processing bulk operations..."):
+                results = process_websites(df)
+                st.success("Bulk operations completed successfully")
+                st.write(results)
 
 # Footer
 st.markdown("---")
-st.write("WordPress Content Manager v1.0")
+st.write("WordFlow v1.0")
