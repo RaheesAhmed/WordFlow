@@ -1,6 +1,6 @@
 # WordFlow: Advanced WordPress Content Orchestrator
 
-![WordFlow Logo](https://placekitten.com/1200/400)
+![WordFlow Logo](wordflow-logo.PNG)
 
 [![GitHub license](https://img.shields.io/github/license/RaheesAhmed/WordFlow.svg)](https://github.com/RaheesAhmed/WordFlow/blob/master/LICENSE)
 [![GitHub release](https://img.shields.io/github/release/RaheesAhmed/WordFlow.svg)](https://GitHub.com/RaheesAhmed/WordFlow/releases/)
